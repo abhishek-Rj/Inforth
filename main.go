@@ -21,6 +21,16 @@ func main() {
 		Description: "List all the projects inside working directory",
 	}, functions.ListProjects)
 
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "get_latest_commits",
+		Description: "Get latest commits of all the projects inside working directory",
+	}, functions.GetLatestCommit)
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "search_todo",
+		Description: "Search for todos in all the projects inside working directory",
+	}, functions.SearchTodo)
+
 	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		log.Fatal(err)
 	}
