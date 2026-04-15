@@ -1,45 +1,27 @@
 package main
 
 import (
+	"context"
 	"log"
 
-	"github.com/fsnotify/fsnotify"
+	"github.com/abhishek-Rj/Inforth/config"
+	"github.com/abhishek-Rj/Inforth/functions"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func main() {
-    // Create new watcher.
-    watcher, err := fsnotify.NewWatcher()
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer watcher.Close()
+	config.Load()
+	server := mcp.NewServer(&mcp.Implementation{
+		Name:    "get_project_updates",
+		Version: "1.0.0",
+	}, nil)
 
-    // Start listening for events.
-    go func() {
-        for {
-            select {
-            case event, ok := <-watcher.Events:
-                if !ok {
-                    return
-                }
-                log.Println("event:", event)
-                if event.Has(fsnotify.Write) {
-                    log.Println("modified file:", event.Name)
-                }
-            case err, ok := <-watcher.Errors:
-                if !ok {
-                    return
-                }
-                log.Println("error:", err)
-            }
-        }
-    }()
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "list_projects",
+		Description: "List all the projects inside working directory",
+	}, functions.ListProjects)
 
-    // Add a path.
-    err = watcher.Add("/home/hoseung/Desktop/AI/Inforth")
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    <-make(chan struct{})
+	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
+		log.Fatal(err)
+	}
 }
